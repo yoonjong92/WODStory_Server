@@ -1,7 +1,12 @@
 from django.db import models
+from django.conf import settings
 from django.utils import timezone
+from django.contrib.auth.models import AbstractUser
 
 # Create your models here.
+
+class MyUser(AbstractUser):
+    authtoken = models.CharField(max_length=200,null=True,blank=True)
 
 class WODType(models.Model):
     name = models.CharField(max_length=200)
@@ -11,7 +16,7 @@ class WODType(models.Model):
 
 
 class WOD(models.Model):
-    author = models.ForeignKey('auth.User', related_name="wods")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, related_name="wods")
     title = models.CharField(max_length=200)
     text = models.TextField()
     date = models.DateField(default=timezone.now)
@@ -20,8 +25,8 @@ class WOD(models.Model):
     result_rounds = models.IntegerField(blank=True, null=True)
     result_reps = models.IntegerField(blank=True, null=True)
 
-#    def __str__(self):
-#        return self.title
+    def __str__(self):
+        return self.title
 
 class WorkoutType(models.Model):
     name = models.CharField(max_length=200, unique=True)
@@ -34,7 +39,7 @@ class Workout(models.Model):
     name = models.ForeignKey('WorkoutType', to_field='name',validators=[])
     weight = models.IntegerField(blank=True,null = True)
     distance = models.IntegerField(blank=True,null = True)
-    reps = models.IntegerField(default = 1)
+    reps = models.TextField()
 
     def __str__(self):
         return self.id

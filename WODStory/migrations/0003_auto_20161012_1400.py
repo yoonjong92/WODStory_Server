@@ -7,13 +7,13 @@ from django.db import models, migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('WODStory', '0008_auto_20161007_1906'),
+        ('WODStory', '0002_auto_20161011_1545'),
     ]
 
     operations = [
         migrations.AlterField(
             model_name='workout',
-            name='name',
-            field=models.ForeignKey(to='WODStory.WorkoutType', to_field='name'),
+            name='reps',
+            field=models.TextField(),
         ),
     ]
