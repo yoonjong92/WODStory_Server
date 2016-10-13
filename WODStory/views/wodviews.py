@@ -9,21 +9,25 @@ class WorkoutSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Workout
-        fields = ('name','weight','distance','reps',)
 
 
 class WODSerializer(serializers.ModelSerializer):
     workouts = WorkoutSerializer(many=True)
+    date = serializers.DateField(format="%Y-%m-%d",input_formats="%Y-%m-%d",)
+    def to_internal_value(self, data):
+        return data
 
     def create(self, validiated_data):
-        user = get_user_model()(id=validiated_data['user'])
+        user = self.context['request'].user
         wodtype = WODType(id=validiated_data['type'])
-        wod = WOD.objects.create(user = self.request.user.id,title = validiated_data['title'],type = validiated_data['type'],
-        text = validiated_data['text'],result_reps = validiated_data['result_reps'])
+        wod = WOD.objects.create(user = user,title = validiated_data['title'],type = wodtype,
+        text = validiated_data['text'],date = validiated_data['date'])
         if 'result_time' in validiated_data:
             wod.result_time = validiated_data['result_time']
         if 'result_rounds' in validiated_data:
             wod.result_rounds = validiated_data['result_rounds']
+        if 'result_reps' in validiated_data:
+            wod.result_reps = validiated_data['result_reps']
         for item in validiated_data['workouts']:
             workouttype, created = WorkoutType.objects.get_or_create(name = item['name'])
             workout = Workout.objects.create(name = workouttype, wod = wod)
@@ -39,7 +43,7 @@ class WODSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = WOD
-        fields = ('id', 'user', 'title', 'text', 'type', 'workouts', 'result_time', 'result_rounds', 'result_reps')
+        fields = ('id', 'user', 'title', 'text', 'type', 'date', 'rounds', 'emomminute', 'workouts', 'result_time', 'result_rounds', 'result_reps')
 
 class WODSList(generics.ListCreateAPIView):
 #    queryset = WOD.objects.all()
@@ -55,9 +59,6 @@ class WODSList(generics.ListCreateAPIView):
         if user_id is not None:
             qset = qset.filter(user_id=user_id)
         return qset
-
-    def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
 
 
 class WODDetail(generics.RetrieveUpdateDestroyAPIView):
