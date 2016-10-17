@@ -10,6 +10,7 @@ urlpatterns = [
     url(r'^users/$', userviews.UserList.as_view(), name="user-list"),
     url(r'^users/(?P<pk>[0-9]+)/$', userviews.UserDetail.as_view(), name="user-detail"),
     url(r'^workout/$', wodviews.WorkoutList.as_view(), name="workout-list"),
+    url(r'^workouttype/$', wodviews.WorkoutTypeList.as_view(), name="workouttype-list"),
 ]
 
 urlpatterns = format_suffix_patterns(urlpatterns)
