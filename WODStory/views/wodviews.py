@@ -48,7 +48,7 @@ class WODSerializer(serializers.ModelSerializer):
             else:
                 workouttype.count = workouttype.count + 1
             workouttype.save()
-            workout = Workout.objects.create(name = workouttype, wod = wod)
+            workout = Workout.objects.create(name = workouttype, wod = wod, user = user, date = validiated_data['date'])
             if 'weight' in item:
                 workout.weight = item['weight']
             if 'weight_unit' in item:
@@ -62,6 +62,15 @@ class WODSerializer(serializers.ModelSerializer):
     class Meta:
         model = WOD
         fields = ('id', 'user', 'title', 'text', 'type', 'date', 'round', 'emomminute', 'emomperminute', 'workouts', 'result_time', 'result_rounds', 'result_reps')
+
+class WODSearchSerializer(serializers.ModelSerializer):
+    wod = WODSerializer()
+#    def to_representation(self,obj):
+#        return obj.wod
+
+    class Meta:
+        model = Workout
+        fields = ('wod', 'user', 'name')
 
 class WODSList(generics.ListCreateAPIView):
 #    queryset = WOD.objects.all()
@@ -80,6 +89,22 @@ class WODSList(generics.ListCreateAPIView):
             qset = qset.filter(user_id=user_id)
         return qset
 
+class WODSearch(generics.ListAPIView):
+    serializer_class = WODSearchSerializer
+    pagination_class = LimitOffsetPagination
+    filter_backends = (filters.OrderingFilter,)
+    ordering = ('-date',)
+
+    def get_queryset(self):
+        qset = Workout.objects.all()
+        user_id = self.request.query_params.get('user_id', None)
+        if user_id is not None:
+            qset = qset.filter(user_id=user_id)
+        type_name = self.request.query_params.get('name', None)
+        if type_name is not None:
+            qset = qset.filter(name = type_name)
+        return qset
+
 
 class WODDetail(generics.RetrieveUpdateDestroyAPIView):
     queryset = WOD.objects.all()
@@ -90,6 +115,8 @@ class WODDetail(generics.RetrieveUpdateDestroyAPIView):
 class WorkoutTypeList(generics.ListCreateAPIView):
     queryset = WorkoutType.objects.all()
     serializer_class = WorkoutTypeSerializer
+    filter_backends = (filters.OrderingFilter,)
+    ordering = ('-count',)
 
 #필요없는 것
 class WorkoutList(generics.ListCreateAPIView):

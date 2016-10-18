@@ -40,6 +40,8 @@ class WorkoutType(models.Model):
 
 class Workout(models.Model):
     wod = models.ForeignKey('WOD', related_name="workouts")
+    user = models.ForeignKey(settings.AUTH_USER_MODEL)
+    date = models.DateField(null=True)
     name = models.ForeignKey('WorkoutType', to_field='name',validators=[])
     weight = models.IntegerField(blank=True,null = True)
     weight_unit = models.CharField(max_length = 100, blank=True,null = True)
